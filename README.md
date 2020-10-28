@@ -1,5 +1,7 @@
 # balboa-backend-accumulo
 
+![Java CI](https://github.com/satta/balboa-backend-accumulo/workflows/Java%20CI/badge.svg)
+
 This is a backend for [balboa](https://github.com/DCSO/balboa) that uses
 [Apache Accumulo](https://accumulo.apache.org/) as a storage and query engine.
 It is quite basic in its feature set and should be considered a starting point or

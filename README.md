@@ -52,8 +52,11 @@ from frontends.
 ## Accumulo setup
 
 The observation data are stored in three tables, optimized for `rrname`, `rdata` and
-reverse `rrname` lookups (used for suffix queries). We store observations redundantly
+reverse `rrname` look-ups (used for suffix queries). We store observations redundantly
 reduce the number of indirections.
+
+Please make sure these tables are present and read/writable for the user specified
+in the connection details.
 
 ### Table `balboa_by_rrname`
 

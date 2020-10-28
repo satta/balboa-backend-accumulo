@@ -14,6 +14,7 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.Text;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -117,18 +118,7 @@ public class AccumuloProcessor implements InputProcessor {
         throw new BalboaException("not implemented yet");
     }
 
-    private void handleRrnameAndRdataQuery(Query q, List<Observation> obs, Authorizations auths) {
-        Range rng;
-        boolean hasSensorID = false;
-        if (q.getSensorid() != null && q.getSensorid().equals("")) {
-            rng = Range.prefix((q.getRrname() + '\0' + q.getSensorid() + '\0' + q.getRdata() + '\0'));
-        } else {
-            rng = Range.prefix((q.getRrname() + '\0'));
-        }
-        String tableName = "balboa_by_rrname";
-    }
-
-    private void handleRrnameQuery(Query q, List<Observation> obs, Authorizations auths) {
+    private void handleRrnameQuery(Query q, ObservationStreamConsumer osc, Authorizations auths) {
         // default: exact search by rrname
         Range rng = Range.prefix((q.getRrname() + '\0'));
         String rrname = q.getRrname();
@@ -143,21 +133,24 @@ public class AccumuloProcessor implements InputProcessor {
                 // wildcard search, prefix-anchored
                 rng = Range.prefix(StringUtils.substring(rrname, 0, rrname.length() - 1));
             } else {
-                throw new BalboaException("wildcards are only supported at beginning xor end of query");
+                throw new BalboaException("wildcards are only supported at either the beginning or end of query");
             }
         }
         int i = 0;
         try (Scanner scan = client.createScanner(tableName, auths)) {
             scan.setRange(rng);
+            // TODO: use custom iterators to make sure these two match in the correct locations
+            // TODO: (e.g. via a RowFilter iterator)
             if (q.getSensorid() != null && !q.getSensorid().equals("")) {
-                // TODO Have sensor ID in column family?
                 IteratorSetting sidSetting = new IteratorSetting(5, GrepIterator.class);
                 GrepIterator.setTerm(sidSetting, '\0' + q.getSensorid() + '\0');
                 scan.addScanIterator(sidSetting);
             }
-            //IteratorSetting setting = new IteratorSetting(5, RegExFilter.class);
-            //RegExFilter.setRegexs(setting, "^.*42.1.*", null, null, null, true);
-            //can.addScanIterator(setting);
+            if (q.getRdata() != null && !q.getRdata().equals("")) {
+                IteratorSetting sidSetting = new IteratorSetting(6, GrepIterator.class);
+                GrepIterator.setTerm(sidSetting, '\0' + q.getRdata() + '\0');
+                scan.addScanIterator(sidSetting);
+            }
             RowIterator rowIterator = new RowIterator(scan);
             while (rowIterator.hasNext()) {
                 if (i >= q.getLimit())
@@ -192,15 +185,15 @@ public class AccumuloProcessor implements InputProcessor {
                 }
                 o.setRrtype(rowValues.get(2));
                 o.setSensorid(rowValues.get(1));
-                obs.add(o);
+                osc.submit(o);
                 i++;
             }
-        } catch (TableNotFoundException e) {
+        } catch (TableNotFoundException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleRdataQuery(Query q, List<Observation> obs, Authorizations auths) {
+    private void handleRdataQuery(Query q, ObservationStreamConsumer osc, Authorizations auths) {
         Range rng;
         if (q.getSensorid() != null && !q.getSensorid().equals("")) {
             rng = Range.prefix((q.getRdata() + '\0' + q.getSensorid() + '\0'));
@@ -246,27 +239,22 @@ public class AccumuloProcessor implements InputProcessor {
                 o.setRrtype(rowValues.get(2));
                 o.setRrname(rowValues.get(3));
                 o.setSensorid(rowValues.get(1));
-                obs.add(o);
+                osc.submit(o);
                 i++;
             }
-        } catch (TableNotFoundException e) {
+        } catch (TableNotFoundException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void handle(Query q, List<Observation> obs) throws BalboaException {
+    public void handle(Query q, ObservationStreamConsumer osc) throws BalboaException {
         Authorizations auths = new Authorizations("public");
         if (q.getRrname() != null && !q.getRrname().equals("")) {
-            if (q.getRdata() != null && !q.getRdata().equals("")) {
-                handleRrnameAndRdataQuery(q, obs, auths);
-            } else {
-                handleRrnameQuery(q, obs, auths);
-            }
+                handleRrnameQuery(q, osc, auths);
         } else if (q.getRdata() != null && !q.getRdata().equals("")) {
-            handleRdataQuery(q, obs, auths);
+            handleRdataQuery(q, osc, auths);
         } else {
-            throw new BalboaException("neither Rdata nor Rrname given");
+            throw new BalboaException("neither Rdata nor RRname given");
         }
     }
 }

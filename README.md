@@ -97,7 +97,7 @@ These need to be set on the following  other tables as well:
 This example run uses balboa's `balboa-backend-console` to directly talk to the
 backend rather than having to go through the GraphQL frontend.
 
-`rdata` full query:
+`rrname` full query:
 ```
 $ balboa-backend-console query -h 127.0.0.1 -p 4242 -r dns.google | head -n 1 | jq
 {

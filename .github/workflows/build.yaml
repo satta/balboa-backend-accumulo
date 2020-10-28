@@ -17,7 +17,7 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
       - name: Copy artifact
-        run: mkdir staging && cp target/balboa-backend-accumulo*.jar staging/balboa-backend-accumulo.jar
+        run: mkdir staging && cp target/balboa-backend-accumulo*-with-dependencies.jar staging/balboa-backend-accumulo.jar
       - uses: actions/upload-artifact@v2
         with:
           name: balboa-backend-java.jar

@@ -92,6 +92,38 @@ These need to be set on the following  other tables as well:
 | rev(rrname)-sensorid-rdata-rrtype | seen          | first            | public     | LONG VARLEN |
 | rev(rrname)-sensorid-rdata-rrtype | seen          | last             | public     | LONG VARLEN |
 
+## Example run
+
+This example run uses balboa's `balboa-backend-console` to directly talk to the
+backend rather than having to go through the GraphQL frontend.
+
+```
+$ balboa-backend-console query -h 127.0.0.1 -p 4242 -r dns.google | head -n 1 | jq
+{
+  "rrname": "dns.google",
+  "rrtype": "A",
+  "sensor_id": "foo",
+  "rdata": "8.8.4.4",
+  "count": 1,
+  "first_seen": 1598303837,
+  "last_seen": 1598303897
+}
+```
+
+Suffix query:
+```
+$ balboa-backend-console query -h 127.0.0.1 -p 4242 -r %.com.de | head -n 1 | jq
+{
+  "rrname": "www.jabra.com.de",
+  "rrtype": "A",
+  "sensor_id": "foo",
+  "rdata": "152.199.21.175",
+  "count": 1,
+  "first_seen": 1603348710,
+  "last_seen": 1603348770
+}
+```
+
 ## PoC limitations
 
  * Hard-coded table names and `public` visibility

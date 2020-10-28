@@ -97,6 +97,7 @@ These need to be set on the following  other tables as well:
 This example run uses balboa's `balboa-backend-console` to directly talk to the
 backend rather than having to go through the GraphQL frontend.
 
+`rdata` full query:
 ```
 $ balboa-backend-console query -h 127.0.0.1 -p 4242 -r dns.google | head -n 1 | jq
 {
@@ -110,7 +111,7 @@ $ balboa-backend-console query -h 127.0.0.1 -p 4242 -r dns.google | head -n 1 | 
 }
 ```
 
-Suffix query:
+`rrname` suffix query:
 ```
 $ balboa-backend-console query -h 127.0.0.1 -p 4242 -r %.com.de | head -n 1 | jq
 {
@@ -121,6 +122,20 @@ $ balboa-backend-console query -h 127.0.0.1 -p 4242 -r %.com.de | head -n 1 | jq
   "count": 1,
   "first_seen": 1603348710,
   "last_seen": 1603348770
+}
+```
+
+`rdata` query:
+```
+$ balboa-backend-console query -h 127.0.0.1 -p 4242 -d 9.9.9.10 | jq
+{
+  "rrname": "dns10.quad9.net",
+  "rrtype": "A",
+  "sensor_id": "foo",
+  "rdata": "9.9.9.10",
+  "count": 1,
+  "first_seen": 1603892361,
+  "last_seen": 1603892421
 }
 ```
 

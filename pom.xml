@@ -15,12 +15,12 @@
     <version>0.1-SNAPSHOT</version>
 
     <dependencies>
-        <dependency>
+<!--        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>[5.0,)</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.accumulo</groupId>
             <artifactId>accumulo-core</artifactId>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.github.satta</groupId>
             <artifactId>balboa-backend-java</artifactId>
-            <version>[0.2,)</version>
+            <version>[0.4,)</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
